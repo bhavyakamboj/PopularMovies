@@ -5,4 +5,8 @@
     <string name="movies_filter_spinner">Filter</string>
     <string name="most_popular">Most Popular</string>
     <string name="highest_rated">Highest Rated</string>
+
+    <!-- Shared preferences -->
+    <string name="pref_movies_filter_key">movie_filter</string>
+    <string name="pref_movies_filter_default">top_rated</string>
 </resources>
