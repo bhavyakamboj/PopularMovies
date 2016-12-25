@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MoviesFragment extends Fragment{
+public class MoviesFragment extends Fragment {
     private final String TOP_RATED = "top_rated";
     private final String POPULAR = "popular";
     private final int DEFAULT_PAGE = 1;
@@ -48,6 +48,8 @@ public class MoviesFragment extends Fragment{
     private List<Movie> mDataSet = new ArrayList<>();
     private boolean firstRun = false;
     private boolean sharedPreferencesChanged = false;
+    private MoviesAdapter.OnMovieClickListener movieClickListener;
+    private String selectedMovieId;
     SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
 
@@ -108,7 +110,19 @@ public class MoviesFragment extends Fragment{
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(getString(R.string.pref_movies_filter_key),POPULAR);
         editor.commit();
-        mAdapter = new MoviesAdapter(mDataSet,this.getContext());
+        movieClickListener = new MoviesAdapter.OnMovieClickListener() {
+            @Override
+            public void onMovieClick(String movieId) {
+                selectedMovieId = movieId;
+                onMovieSelected(movieId);
+            }
+
+            @Override
+            public void onClick(View v) {
+
+            }
+        };
+        mAdapter = new MoviesAdapter(mDataSet,this.getContext(),movieClickListener);
         mRecyclerView.setAdapter(mAdapter);
 
         return view;
@@ -175,6 +189,7 @@ public class MoviesFragment extends Fragment{
     public void onStart() {
         super.onStart();
     }
+
 
     public interface OnMovieSelectedListener {
         void onMovieSelection(String movieId);

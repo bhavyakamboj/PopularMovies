@@ -2,11 +2,11 @@ package com.bhavyakamboj.popularmovies;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.Movie;
 import com.squareup.picasso.Picasso;
@@ -17,13 +17,16 @@ import java.util.List;
 class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder> {
     private List<Movie> mDataSet;
     private Context mContext;
-    MoviesAdapter(List<Movie> dataSet, Context context){
+    private OnMovieClickListener movieClickListener;
+    MoviesAdapter(List<Movie> dataSet, Context context, OnMovieClickListener listener){
         if (dataSet == null) {
             throw new IllegalArgumentException(
                     "modelData must not be null");
         }
         this.mDataSet = dataSet;
         this.mContext = context;
+        this.movieClickListener = listener;
+
     }
 
     @Override
@@ -42,9 +45,11 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder>
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: return movie id to fragment
+                String movieId = holder.textView.getText().toString();
+                onMovieClicked(movieId);
             }
         });
+        holder.textView.setText(movie.getMovieId());
 
     }
 
@@ -63,9 +68,17 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder>
 
     final static class SimpleViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
+        TextView textView;
          SimpleViewHolder(View itemView){
             super(itemView);
             imageView = (ImageView) itemView.findViewById(R.id.movies_list_item_image);
+             textView = (TextView) itemView.findViewById(R.id.movies_list_item_textview);
         }
+    }
+    public interface OnMovieClickListener extends View.OnClickListener {
+        void onMovieClick(String movieId);
+    }
+    public void onMovieClicked(String movieId) {
+            movieClickListener.onMovieClick(movieId);
     }
 }
