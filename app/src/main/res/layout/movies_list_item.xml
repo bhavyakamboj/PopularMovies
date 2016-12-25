@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="160dp"
-    android:layout_marginStart="10dp"
-    android:layout_height="100dp" android:id="@+id/movies_list_item"
-    android:layout_marginLeft="10dp" android:layout_marginTop="10dp"
-    >
-    <TextView
-        android:id="@+id/movies_list_item_text"
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:gravity="center"
-        android:background="@color/colorAccent"/>
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content" android:id="@+id/movies_list_item">
+   <ImageView
+       android:id="@+id/movies_list_item_image"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent" />
 </LinearLayout>

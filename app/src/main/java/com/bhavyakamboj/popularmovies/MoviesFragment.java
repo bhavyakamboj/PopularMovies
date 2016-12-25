@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.GridLayoutManager;
@@ -21,43 +20,36 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.bhavyakamboj.popularmovies.domain.Movie;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnMovieSelectedListener} interface
- * to handle interaction events.
- * Use the {@link MoviesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class MoviesFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-    private final String TOP_RATED = "top_rated?";
-    private final String POPULAR = "popular?";
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
+public class MoviesFragment extends Fragment{
+    private final String TOP_RATED = "top_rated";
+    private final String POPULAR = "popular";
+    private final int DEFAULT_PAGE = 1;
     private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager  mLayoutManager;
-    private RecyclerView.Adapter mAdapter;
-    private String[] mDataSet = {"1","2","3","4","5","6","7","8","9","10","1",
-            "2","3","4","5","6","7","8","9","10","1","2","3","4","5","6","7",
-            "8","9","10","1","2","3","4","5","6","7","8","9","10",
-            "1","2","3","4","5","6","7","8","9","10","1",
-            "2","3","4","5","6","7","8","9","10","1","2","3","4","5","6","7",
-            "8","9","10","1","2","3","4","5","6","7","8","9","10",};
+    private GridLayoutManager  mLayoutManager;
+    private MoviesAdapter mAdapter;
+    private int mTotalPages;
+    private int mCurrentPage;
+    private List<Movie> mDataSet = new ArrayList<>();
+    private boolean firstRun = false;
+    private boolean sharedPreferencesChanged = false;
+    SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnMovieSelectedListener mListener;
 
@@ -65,50 +57,57 @@ public class MoviesFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MoviesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static MoviesFragment newInstance(String param1, String param2) {
-        MoviesFragment fragment = new MoviesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-        //TODO: figure out what to do with params in moviesFragment new instance
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
         setHasOptionsMenu(true);
-        // TODO: execute fetch movie task and populate recycler view
-        // TODO: get preferences from shared preferences
+
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        // Inflate the layout for th`is fragment
+//        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_movies,container,false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.movies_recycler_view);
-//        mRecyclerView = new RecyclerView(getContext());
-        if(mRecyclerView == null){
-            Log.e(LOG_TAG,"null recycler view");
-        }
-//        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setHasFixedSize(true);
+
         mLayoutManager = new GridLayoutManager(getActivity(),2);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 
+        mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                sharedPreferencesChanged = true;
+                if(firstRun && key.equals(getString(R.string.pref_movies_filter_key))){
+                    if(!mDataSet.isEmpty()) mAdapter.clear();
+                    updateMovies(DEFAULT_PAGE);
+                    mRecyclerView.addOnScrollListener(new EndlessScrollListener(mLayoutManager) {
+                        @Override
+                        public void onLoadMore(int current_page) {
+                            updateMovies(current_page + 1);
+                        }
+                    });
+                }
+            }
+        };
+        preferences.registerOnSharedPreferenceChangeListener(mPrefListener);
+        if(!firstRun){
+            updateMovies(DEFAULT_PAGE);
+            mRecyclerView.addOnScrollListener(new EndlessScrollListener(mLayoutManager) {
+                @Override
+                public void onLoadMore(int current_page) {
+                    if(!sharedPreferencesChanged) {
+                        updateMovies(mCurrentPage);
+                        mCurrentPage+=1;
+                    }
+                }
+            });
+        }
+        firstRun = true;
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(getString(R.string.pref_movies_filter_key),POPULAR);
+        editor.commit();
         mAdapter = new MoviesAdapter(mDataSet,this.getContext());
         mRecyclerView.setAdapter(mAdapter);
 
@@ -138,13 +137,19 @@ public class MoviesFragment extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: link with shared preferences
-                Log.d(LOG_TAG,position+"");
+                SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                if(position==0){
+                    editor.putString(getString(R.string.pref_movies_filter_key),POPULAR);
+                } else if (position==1){
+                    editor.putString(getString(R.string.pref_movies_filter_key),TOP_RATED);
+                }
+                editor.apply();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // TODO: set to most popular in shared preferences by default
+                // do nothing
             }
         });
     }
@@ -169,40 +174,27 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        // page is optional but default value is 1
-        updateMovies("1");
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnMovieSelectedListener {
-        // TODO: Update argument type and name
         void onMovieSelection(String movieId);
     }
     // passing page as argument will help in making functionality of load more
-    private void updateMovies(String page){
-        FetchMovieTask movieTask = new FetchMovieTask();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String movieFilter = prefs.getString(getString(R.string.pref_movies_filter_key),
-                getString(R.string.pref_movies_filter_default));
-        movieTask.execute(movieFilter,page);
+    // used shared preferences to execute task
+    private void updateMovies(int page){
+            SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+            String movieFilter = prefs.getString(getString(R.string.pref_movies_filter_key),
+                    TOP_RATED);
+
+            FetchMovieTask movieTask = new FetchMovieTask();
+            movieTask.execute(movieFilter,Integer.toString(page));
+//            Toast.makeText(getActivity(),"No more results",Toast.LENGTH_LONG).show();
     }
-    // TODO: add load more button at end of recyclerview
-    // pass params[0]-> most_popular or top-rated
-    public class FetchMovieTask extends AsyncTask<String,Void,Void> {
+    public class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
 
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
-        // params[0] for top_rated/popular params[1] for page number
         @Override
-        protected Void doInBackground(String... params) {
+        protected List<Movie> doInBackground(String... params) {
 
             if(params.length == 0){
                 return null;
@@ -226,7 +218,6 @@ public class MoviesFragment extends Fragment {
                     .appendPath(filter).appendQueryParameter(API_KEY,BuildConfig.THE_MOVIE_DB_API_KEY)
                     .appendQueryParameter(LANGUAGE,language)
                     .appendQueryParameter(PAGE,page).build();
-                Log.d(LOG_TAG,builtUri.toString());
                 URL url = new URL(builtUri.toString());
 
                 // create connection to moviedb and open connection
@@ -236,7 +227,7 @@ public class MoviesFragment extends Fragment {
 
                 // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 if (inputStream == null) {
                     // Nothing to do.
                     return null;
@@ -248,7 +239,7 @@ public class MoviesFragment extends Fragment {
                     // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                     // But it does make debugging a *lot* easier if you print out the completed
                     // buffer for debugging.
-                    buffer.append(line + "\n");
+                    buffer.append(line).append("\n");
                 }
 
                 if (buffer.length() == 0) {
@@ -256,7 +247,7 @@ public class MoviesFragment extends Fragment {
                     return null;
                 }
                 moviesJsonStr = buffer.toString();
-                Log.d(LOG_TAG,moviesJsonStr);
+//                Log.d(LOG_TAG,moviesJsonStr);
 
 
             } catch (IOException e) {
@@ -273,12 +264,45 @@ public class MoviesFragment extends Fragment {
                     }
                 }
             }
-            return null;
+            try {
+                return getMoviesListFromJson(moviesJsonStr);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            } return null;
         }
 
+        private List<Movie> getMoviesListFromJson(String moviesJsonStr) throws JSONException{
+            String TMD_RESULTS = "results";
+            String TMD_CURRENT_PAGE = "page";
+            String TMD_TOTAL_PAGES = "total_pages";
+            String TMD_POSTER_PATH = "poster_path";
+            String TMD_ID = "id";
+            String TMD_ORIGINAL_TITLE = "original_title";
+            JSONObject moviesJson = new JSONObject(moviesJsonStr);
+            mTotalPages = moviesJson.getInt(TMD_TOTAL_PAGES);
+            mCurrentPage = moviesJson.getInt(TMD_CURRENT_PAGE);
+            List<Movie> moviesList = new ArrayList<>();
 
+            JSONArray jsonArray = moviesJson.getJSONArray(TMD_RESULTS);
+            for(int i=0;i<jsonArray.length();i++){
+                JSONObject currentMovie = jsonArray.getJSONObject(i);
+                moviesList.add(new Movie(currentMovie.getString(TMD_ID),currentMovie.getString(TMD_POSTER_PATH),
+                        currentMovie.getString(TMD_ORIGINAL_TITLE)));
+            }
 
+            return moviesList;
+        }
 
-
+        @Override
+        protected void onPostExecute(List<Movie> movies) {
+            super.onPostExecute(movies);
+            if(movies != null){
+                for(Movie movie: movies){
+                    mAdapter.add(movie);
+                }
+                mAdapter.notifyDataSetChanged();
+            }
+        }
     }
 }

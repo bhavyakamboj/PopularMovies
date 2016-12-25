@@ -2,17 +2,22 @@ package com.bhavyakamboj.popularmovies;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ImageView;
+
+import com.bhavyakamboj.popularmovies.domain.Movie;
+import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 
-final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder> {
-    private String[] mDataSet;
+class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder> {
+    private List<Movie> mDataSet;
     private Context mContext;
-    MoviesAdapter(String[] dataSet, Context context){
+    MoviesAdapter(List<Movie> dataSet, Context context){
         if (dataSet == null) {
             throw new IllegalArgumentException(
                     "modelData must not be null");
@@ -29,27 +34,38 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewH
     }
 
     @Override
-    public void onBindViewHolder(SimpleViewHolder holder, int position) {
-        holder.textLine.setText(mDataSet[position]);
-        holder.textLine.setOnClickListener(new View.OnClickListener() {
+    public void onBindViewHolder(final SimpleViewHolder holder, int position) {
+        final String BASE_URL = "http://image.tmdb.org/t/p/w500";
+        Movie movie = mDataSet.get(position);
+        Picasso.with(mContext).load(BASE_URL+movie.getPosterPath())
+                .into(holder.imageView);
+        holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext,"Item is clicked",Toast.LENGTH_SHORT).show();
+                // TODO: return movie id to fragment
             }
         });
+
     }
 
     @Override
     public int getItemCount() {
-        return mDataSet.length;
+        return mDataSet.size();
+    }
 
+    void clear(){
+        mDataSet.clear();
+    }
+
+    void add(Movie movie){
+        mDataSet.add(movie);
     }
 
     final static class SimpleViewHolder extends RecyclerView.ViewHolder{
-        TextView textLine;
+        ImageView imageView;
          SimpleViewHolder(View itemView){
             super(itemView);
-            textLine = (TextView) itemView.findViewById(R.id.movies_list_item_text);
+            imageView = (ImageView) itemView.findViewById(R.id.movies_list_item_image);
         }
     }
 }

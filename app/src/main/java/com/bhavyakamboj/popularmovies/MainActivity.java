@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
             FragmentManager fm = getSupportFragmentManager();
             Fragment fragment = fm.findFragmentById(R.id.container);
             if(fragment == null){
-                fragment = MoviesFragment.newInstance(null,null);
+                fragment = new MoviesFragment();
                 fm.beginTransaction()
                         .add(R.id.container,fragment)
                         .commit();
