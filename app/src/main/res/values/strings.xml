@@ -8,4 +8,10 @@
 
     <!-- Shared preferences -->
     <string name="pref_movies_filter_key">top_rated</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Intents -->
+    <string name="movie_id_key">movieId</string>
 </resources>

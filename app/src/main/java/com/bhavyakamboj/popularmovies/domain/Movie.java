@@ -19,24 +19,15 @@ public class Movie {
         return posterPath;
     }
 
-    public void setPosterPath(String posterPath) {
-        this.posterPath = posterPath;
-    }
 
     public String getMovieId() {
         return movieId;
     }
 
-    public void setMovieId(String movieId) {
-        this.movieId = movieId;
-    }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
 
 }

@@ -42,9 +42,9 @@ public class MoviesFragment extends Fragment {
     private final int DEFAULT_PAGE = 1;
     private RecyclerView mRecyclerView;
     private GridLayoutManager  mLayoutManager;
-    private MoviesAdapter mAdapter;
-    private int mTotalPages;
-    private int mCurrentPage;
+    private static MoviesAdapter mAdapter;
+    private static int mTotalPages;
+    private static int mCurrentPage;
     private List<Movie> mDataSet = new ArrayList<>();
     private boolean firstRun = false;
     private boolean sharedPreferencesChanged = false;
@@ -205,87 +205,94 @@ public class MoviesFragment extends Fragment {
             movieTask.execute(movieFilter,Integer.toString(page));
 //            Toast.makeText(getActivity(),"No more results",Toast.LENGTH_LONG).show();
     }
-    public class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
+    private class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
 
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
+        // params[0] is for filter, params[1] for page, params[2] is for movie ID
         @Override
         protected List<Movie> doInBackground(String... params) {
 
-            if(params.length == 0){
+            if (params.length == 0) {
                 return null;
             }
 
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-            String language = "en-US";
-            String moviesJsonStr = null;
-            String filter = params[0];
-            String page = params[1];
 
-            try {
-            final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
-            // TODO: move api key to build config
-            final String API_KEY = "api_key";
-            final String LANGUAGE = "language";
-            final String PAGE = "page";
+            if (params.length == 2) {
+                HttpURLConnection urlConnection = null;
+                BufferedReader reader = null;
+                String language = "en-US";
+                String moviesJsonStr = null;
+                String filter = params[0];
+                String page = params[1];
 
-            Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                    .appendPath(filter).appendQueryParameter(API_KEY,BuildConfig.THE_MOVIE_DB_API_KEY)
-                    .appendQueryParameter(LANGUAGE,language)
-                    .appendQueryParameter(PAGE,page).build();
-                URL url = new URL(builtUri.toString());
+                try {
+                    final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
+                    // TODO: move api key to build config
+                    final String API_KEY = "api_key";
+                    final String LANGUAGE = "language";
+                    final String PAGE = "page";
 
-                // create connection to moviedb and open connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
+                    Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                            .appendPath(filter).appendQueryParameter(API_KEY, BuildConfig.THE_MOVIE_DB_API_KEY)
+                            .appendQueryParameter(LANGUAGE, language)
+                            .appendQueryParameter(PAGE, page).build();
+                    URL url = new URL(builtUri.toString());
 
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder buffer = new StringBuilder();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
+                    // create connection to moviedb and open connection
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
 
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line).append("\n");
-                }
+                    // Read the input stream into a String
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuilder buffer = new StringBuilder();
+                    if (inputStream == null) {
+                        // Nothing to do.
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                moviesJsonStr = buffer.toString();
-//                Log.d(LOG_TAG,moviesJsonStr);
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                        // But it does make debugging a *lot* easier if you print out the completed
+                        // buffer for debugging.
+                        buffer.append(line).append("\n");
+                    }
+
+                    if (buffer.length() == 0) {
+                        // Stream was empty.  No point in parsing.
+                        return null;
+                    }
+                    moviesJsonStr = buffer.toString();
+                    //                Log.d(LOG_TAG,moviesJsonStr);
 
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException e) {
+                            Log.e(LOG_TAG, "Error closing stream", e);
+                        }
                     }
                 }
+                try {
+                    return getMoviesListFromJson(moviesJsonStr);
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                    e.printStackTrace();
+                }
             }
-            try {
-                return getMoviesListFromJson(moviesJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            } return null;
+            return null;
         }
+
+
 
         private List<Movie> getMoviesListFromJson(String moviesJsonStr) throws JSONException{
             String TMD_RESULTS = "results";
@@ -313,10 +320,14 @@ public class MoviesFragment extends Fragment {
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
             if(movies != null){
-                for(Movie movie: movies){
-                    mAdapter.add(movie);
+                if(movies.size()>1){
+                    for(Movie movie: movies){
+                        mAdapter.add(movie);
+                    }
+                    mAdapter.notifyDataSetChanged();
+                } else {
+                    Log.d(LOG_TAG,"single movie");
                 }
-                mAdapter.notifyDataSetChanged();
             }
         }
     }
