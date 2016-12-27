@@ -7,7 +7,7 @@ package com.bhavyakamboj.popularmovies.domain;
 public class MovieDetail extends Movie {
     private String homepage;
     private String imdbId;
-    private String backdrop_path;
+    private String backdropPath;
     private String budget;
     private String overview;
     private String popularity;
@@ -18,13 +18,13 @@ public class MovieDetail extends Movie {
     private boolean video;
     private String voteAverage;
     public MovieDetail(String movieId, String posterPath, String title, String homepage, String
-            imdbId,String backdrop_path, String budget, String overview, String popularity,
+            imdbId, String backdropPath, String budget, String overview, String popularity,
                        String releaseDate, String revenue, String runtime,
                        String tagline, boolean video, String voteAverage){
         super(movieId,posterPath,title);
         this.homepage = homepage;
         this.imdbId = imdbId;
-        this.backdrop_path = backdrop_path;
+        this.backdropPath = backdropPath;
         this.budget = budget;
         this.overview = overview;
         this.popularity = popularity;
@@ -43,8 +43,8 @@ public class MovieDetail extends Movie {
         return imdbId;
     }
 
-    public String getBackdrop_path() {
-        return backdrop_path;
+    public String getBackdropPath() {
+        return backdropPath;
     }
 
     public String getBudget() {

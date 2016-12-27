@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.bhavyakamboj.popularmovies"
-        minSdkVersion 10
+        minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -32,5 +32,6 @@ dependencies {
     compile 'com.android.support:support-v4:25.1.0'
     compile 'com.android.support:recyclerview-v7:25.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.roger.catloadinglibrary:catloadinglibrary:1.0.1'
     testCompile 'junit:junit:4.12'
 }

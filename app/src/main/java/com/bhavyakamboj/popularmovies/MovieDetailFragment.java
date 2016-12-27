@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.MovieDetail;
+import com.roger.catloadinglibrary.CatLoadingView;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -38,6 +39,7 @@ public class MovieDetailFragment extends Fragment {
     private String imageBaseURL = "http://image.tmdb.org/t/p/w1280/";
     private String posterBaseURL = "http://image.tmdb.org/t/p/original/";
     private List<String> movieImages = new ArrayList<>();
+    private CatLoadingView mCatLoadingView;
     public MovieDetailFragment() {
         // Required empty public constructor
     }
@@ -45,6 +47,8 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mCatLoadingView = new CatLoadingView();
+        mCatLoadingView.show(getFragmentManager(), "");
     }
 
     @Override
@@ -58,6 +62,7 @@ public class MovieDetailFragment extends Fragment {
 
         Log.v("LOGS",movieId);
         fetchDataFromInternet(movieId);
+
         return view;
     }
     public void fetchDataFromInternet(String movieId){
@@ -155,7 +160,6 @@ public class MovieDetailFragment extends Fragment {
             String MOVIE_ID = "id";
             String POSTER_PATH = "poster_path";
             String TITLE = "title";
-            String ORIGINAL_TITLE = "original_title";
             String HOMEPAGE = "homepage";
             String IMDB_ID = "imdb_id";
             String BACKDROP_PATH = "backdrop_path";
@@ -193,8 +197,9 @@ public class MovieDetailFragment extends Fragment {
     }
     private void updateDetailFragmentFromTask(MovieDetail movie){
         // TODO: fill the details of movie in fragment
+            mCatLoadingView.dismiss();
             ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
-            Picasso.with(getContext()).load(imageBaseURL+movie.getBackdrop_path()).into(imageView);
+            Picasso.with(getContext()).load(imageBaseURL+movie.getBackdropPath()).into(imageView);
 
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
             title.setText(movie.getTitle());

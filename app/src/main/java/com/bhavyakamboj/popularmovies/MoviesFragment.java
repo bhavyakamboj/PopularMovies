@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.bhavyakamboj.popularmovies.domain.Movie;
+import com.roger.catloadinglibrary.CatLoadingView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,6 +51,7 @@ public class MoviesFragment extends Fragment {
     private boolean sharedPreferencesChanged = false;
     private MoviesAdapter.OnMovieClickListener movieClickListener;
     private String selectedMovieId;
+    private CatLoadingView mCatLoadingView;
     SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
 
@@ -63,6 +65,8 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        mCatLoadingView = new CatLoadingView();
+        mCatLoadingView.show(getFragmentManager(), "");
 
     }
     @Override
@@ -200,9 +204,9 @@ public class MoviesFragment extends Fragment {
             SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
             String movieFilter = prefs.getString(getString(R.string.pref_movies_filter_key),
                     TOP_RATED);
-
             FetchMovieTask movieTask = new FetchMovieTask();
             movieTask.execute(movieFilter,Integer.toString(page));
+
 //            Toast.makeText(getActivity(),"No more results",Toast.LENGTH_LONG).show();
     }
     private class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
@@ -320,15 +324,12 @@ public class MoviesFragment extends Fragment {
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
             if(movies != null){
-                if(movies.size()>1){
-                    for(Movie movie: movies){
+                    for(Movie movie: movies) {
                         mAdapter.add(movie);
+                        mAdapter.notifyDataSetChanged();
                     }
-                    mAdapter.notifyDataSetChanged();
-                } else {
-                    Log.d(LOG_TAG,"single movie");
-                }
             }
+            mCatLoadingView.dismiss();
         }
     }
 }
