@@ -4,13 +4,17 @@ package com.bhavyakamboj.popularmovies;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.bhavyakamboj.popularmovies.domain.Movie;
+import com.bhavyakamboj.popularmovies.domain.MovieDetail;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,18 +25,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MovieDetailFragment extends Fragment {
-
-
+    private String imageBaseURL = "http://image.tmdb.org/t/p/w1280/";
+    private String posterBaseURL = "http://image.tmdb.org/t/p/original/";
+    private List<String> movieImages = new ArrayList<>();
     public MovieDetailFragment() {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -42,18 +55,22 @@ public class MovieDetailFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = getLayoutInflater(savedInstanceState).inflate(R.layout.fragment_movie_detail,
                 container,false);
+
         Log.v("LOGS",movieId);
+        fetchDataFromInternet(movieId);
         return view;
     }
+    public void fetchDataFromInternet(String movieId){
+        FetchMovieTask movieTask = new FetchMovieTask();
+        movieTask.execute(movieId);
+    }
 
-
-
-    private class FetchMovieTask extends AsyncTask<String,Void,Movie> {
+    private class FetchMovieTask extends AsyncTask<String,Void,MovieDetail> {
 
         private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
         // params[0] is for filter, params[1] for page, params[2] is for movie ID
         @Override
-        protected Movie doInBackground(String... params) {
+        protected MovieDetail doInBackground(String... params) {
 
             if (params.length == 0) {
                 return null;
@@ -134,7 +151,7 @@ public class MovieDetailFragment extends Fragment {
 
 
 
-        private Movie getSingleMovieFromJSON(String singleMovieJsonStr) throws JSONException {
+        private MovieDetail getSingleMovieFromJSON(String singleMovieJsonStr) throws JSONException {
             String MOVIE_ID = "id";
             String POSTER_PATH = "poster_path";
             String TITLE = "title";
@@ -150,30 +167,59 @@ public class MovieDetailFragment extends Fragment {
             String RUNTIME = "runtime";
             String TAGLINE = "tagline";
             String VIDEO =  "video";
+            String VOTE_AVERAGE = "vote_average";
 
             JSONObject movieJson = new JSONObject(singleMovieJsonStr);
            return new com.bhavyakamboj.popularmovies.domain.MovieDetail(movieJson.getString
-                    (MOVIE_ID),movieJson
-                    .getString
-                            (POSTER_PATH),
-                    movieJson.getString(TITLE),movieJson.getString(HOMEPAGE),movieJson.getString(IMDB_ID),
-                    movieJson.getString(BACKDROP_PATH),movieJson.getInt(BUDGET),movieJson
-                    .getString(ORIGINAL_TITLE),movieJson.getString(OVERVIEW),movieJson.getString
-                    (POPULARITY),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
-                    movieJson.getString(RUNTIME),movieJson.getString(TAGLINE),movieJson
-                    .getBoolean(VIDEO));
+                   (MOVIE_ID),movieJson.getString(POSTER_PATH),movieJson.getString(TITLE),
+                   movieJson.getString(HOMEPAGE),movieJson.getString(IMDB_ID),
+                   movieJson.getString(BACKDROP_PATH),movieJson.getString(BUDGET),
+                   movieJson.getString(OVERVIEW),movieJson.getString
+                   (POPULARITY),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
+                   movieJson.getString(RUNTIME),movieJson.getString(TAGLINE),movieJson
+                   .getBoolean(VIDEO),movieJson.getString(VOTE_AVERAGE));
 
         }
 
         @Override
-        protected void onPostExecute(Movie movie) {
+        protected void onPostExecute(MovieDetail movie) {
             super.onPostExecute(movie);
             if(movie != null){
-                    Log.d(LOG_TAG,"single movie");
+                    updateDetailFragmentFromTask(movie);
             }
 
         }
 
+    }
+    private void updateDetailFragmentFromTask(MovieDetail movie){
+        // TODO: fill the details of movie in fragment
+            ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
+            Picasso.with(getContext()).load(imageBaseURL+movie.getBackdrop_path()).into(imageView);
+
+            TextView title = (TextView) getView().findViewById(R.id.title_textview);
+            title.setText(movie.getTitle());
+
+            TextView overview = (TextView) getView().findViewById(R.id.overview);
+            overview.setText(movie.getOverview());
+
+            TextView popularity = (TextView) getView().findViewById(R.id.popularity);
+            popularity.setText(movie.getPopularity());
+
+            TextView voteAverage = (TextView) getView().findViewById(R.id.vote_average);
+            voteAverage.setText(movie.getVoteAverage());
+
+            ImageView poster = (ImageView) getView().findViewById(R.id.movie_poster);
+            Picasso.with(getContext()).load(posterBaseURL+movie.getPosterPath()).into(poster);
+
+            TextView releaseDate = (TextView) getView().findViewById(R.id.release_date_textview_value);
+            releaseDate.setText(movie.getReleaseDate());
+
+            NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.US);
+            TextView budget = (TextView) getView().findViewById(R.id.budget_textview_value);
+            budget.setText(numberFormat.format(Double.parseDouble(movie.getBudget())));
+
+            TextView revenue = (TextView) getView().findViewById(R.id.revenue_textview_value);
+            revenue.setText(numberFormat.format(Double.parseDouble(movie.getRevenue())));
     }
 
 }

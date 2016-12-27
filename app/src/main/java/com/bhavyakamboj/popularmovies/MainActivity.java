@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     public void onMovieSelection(String movieId) {
         Toast.makeText(this,movieId,Toast.LENGTH_SHORT).show();
         if(!movieId.isEmpty()){
-            Intent intent = new Intent(this,MovieDetail.class);
+            Intent intent = new Intent(this,MovieDetailActivity.class);
             intent.putExtra(getString(R.string.movie_id_key),movieId);
             startActivity(intent);
         }
