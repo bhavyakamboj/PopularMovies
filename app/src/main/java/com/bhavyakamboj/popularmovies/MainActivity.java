@@ -1,5 +1,6 @@
 package com.bhavyakamboj.popularmovies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieSelectedListener {
 
+    private final String LOG_TAG = this.getClass().getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,5 +29,10 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     @Override
     public void onMovieSelection(String movieId) {
         Toast.makeText(this,movieId,Toast.LENGTH_SHORT).show();
+        if(!movieId.isEmpty()){
+            Intent intent = new Intent(this,MovieDetailActivity.class);
+            intent.putExtra(getString(R.string.movie_id_key),movieId);
+            startActivity(intent);
+        }
     }
 }
