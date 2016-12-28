@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.MovieDetail;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.roger.catloadinglibrary.CatLoadingView;
 import com.squareup.picasso.Picasso;
 
@@ -204,8 +205,9 @@ public class MovieDetailFragment extends Fragment {
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
             title.setText(movie.getTitle());
 
-            TextView overview = (TextView) getView().findViewById(R.id.overview);
-            overview.setText(movie.getOverview());
+            ExpandableTextView expTv1 = (ExpandableTextView) getView().findViewById(R.id
+                    .expandable_text_view);
+            expTv1.setText(movie.getOverview());
 
             TextView popularity = (TextView) getView().findViewById(R.id.popularity);
             popularity.setText(movie.getPopularity());
