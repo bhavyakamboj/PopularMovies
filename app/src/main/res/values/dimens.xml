@@ -6,4 +6,5 @@
     <dimen name="medium_margin">10dp</dimen>
     <dimen name="large_margin">15dp</dimen>
     <dimen name="small_padding">5dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>

@@ -329,7 +329,7 @@ public class MoviesFragment extends Fragment {
                         mAdapter.notifyDataSetChanged();
                     }
             }
-            mCatLoadingView.dismiss();
+            if(mCatLoadingView!=null) mCatLoadingView.dismiss();
         }
     }
 }
