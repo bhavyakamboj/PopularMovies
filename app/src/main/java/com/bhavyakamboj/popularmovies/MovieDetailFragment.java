@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -257,7 +258,11 @@ public class MovieDetailFragment extends Fragment {
                                         }
                                     }).
                                     setView(image);
-                    builder.create().show();                    }
+                    AlertDialog dialog = builder.create();
+                    WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+                    lp.dimAmount = 0.7f;
+                    dialog.show();
+                }
               });
 
         // Retrieve and cache the system's default "short" animation time.
