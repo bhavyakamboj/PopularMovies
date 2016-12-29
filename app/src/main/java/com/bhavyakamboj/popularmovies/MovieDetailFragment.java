@@ -219,6 +219,30 @@ public class MovieDetailFragment extends Fragment {
             posterImageLoader.hide();
             ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
             Picasso.with(getContext()).load(imageBaseURL+movie.getBackdropPath()).into(imageView);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ImageView image = new ImageView(getContext());
+                    Picasso.with(getContext()).load(imageBaseURL+movie
+                            .getBackdropPath()
+                    ).into(image);
+                    image.setAdjustViewBounds(true);
+
+                    AlertDialog.Builder builder =
+                            new AlertDialog.Builder(getContext()).
+                                    setPositiveButton("", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    }).
+                                    setView(image);
+                    AlertDialog dialog = builder.create();
+                    WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+                    lp.dimAmount = 0.7f;
+                    dialog.show();
+                }
+            });
 
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
             title.setText(movie.getTitle());
