@@ -14,4 +14,12 @@
 
     <!-- Intents -->
     <string name="movie_id_key">movieId</string>
+
+    <!-- Movie Detail -->
+    <string name="avl_indicator_name">BallPulseIndicator</string>
+    <string name="movie_loading">Movie loading</string>
+    <string name="revenue">Revenue</string>
+    <string name="budget">Budget</string>
+    <string name="release">Release</string>
+    <string name="votes">Votes</string>
 </resources>

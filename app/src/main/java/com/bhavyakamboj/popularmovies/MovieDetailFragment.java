@@ -1,7 +1,6 @@
 package com.bhavyakamboj.popularmovies;
 
 
-import android.animation.Animator;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -32,8 +31,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -44,15 +41,7 @@ public class MovieDetailFragment extends Fragment {
     private String imageBaseURL = "http://image.tmdb.org/t/p/w780/";
     private String posterBaseURL = "http://image.tmdb.org/t/p/w342/";
     private String posterBaseLargeUrl = "http://image.tmdb.org/t/p/w780/";
-    private List<String> movieImages = new ArrayList<>();
-    private ImageView mExpandedImageView;
-    // Hold a reference to the current animator,
-    // so that it can be canceled mid-way.
-    private Animator mCurrentAnimator;
-    // The system "short" animation time duration, in milliseconds. This
-    // duration is ideal for subtle animations or animations that occur
-    // very frequently.
-    private int mShortAnimationDuration;
+    private final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     public MovieDetailFragment() {
         // Required empty public constructor
     }
@@ -100,7 +89,6 @@ public class MovieDetailFragment extends Fragment {
             String movieID = params[0];
 
             try {
-                final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
                 // TODO: move api key to build config
                 final String API_KEY = "api_key";
                 final String LANGUAGE = "language";
@@ -171,28 +159,20 @@ public class MovieDetailFragment extends Fragment {
             String MOVIE_ID = "id";
             String POSTER_PATH = "poster_path";
             String TITLE = "title";
-            String HOMEPAGE = "homepage";
-            String IMDB_ID = "imdb_id";
             String BACKDROP_PATH = "backdrop_path";
             String BUDGET = "budget";
             String OVERVIEW = "overview";
-            String POPULARITY = "popularity";
             String RELEASE_DATE = "release_date";
             String REVENUE = "revenue";
             String RUNTIME = "runtime";
-            String TAGLINE = "tagline";
-            String VIDEO =  "video";
             String VOTE_AVERAGE = "vote_average";
 
             JSONObject movieJson = new JSONObject(singleMovieJsonStr);
            return new com.bhavyakamboj.popularmovies.domain.MovieDetail(movieJson.getString
                    (MOVIE_ID),movieJson.getString(POSTER_PATH),movieJson.getString(TITLE),
-                   movieJson.getString(HOMEPAGE),movieJson.getString(IMDB_ID),
                    movieJson.getString(BACKDROP_PATH),movieJson.getString(BUDGET),
-                   movieJson.getString(OVERVIEW),movieJson.getString
-                   (POPULARITY),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
-                   movieJson.getString(RUNTIME),movieJson.getString(TAGLINE),movieJson
-                   .getBoolean(VIDEO),movieJson.getString(VOTE_AVERAGE));
+                   movieJson.getString(OVERVIEW),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
+                   movieJson.getString(RUNTIME),movieJson.getString(VOTE_AVERAGE));
 
         }
 
@@ -209,9 +189,8 @@ public class MovieDetailFragment extends Fragment {
     private void updateDetailFragmentFromTask(final MovieDetail movie){
         // TODO: fill the details of movie in fragment
             AVLoadingIndicatorView posterImageLoader = (AVLoadingIndicatorView) getView()
-                    .findViewById
-                (R.id.posterImageLoading);
-            posterImageLoader.hide();
+                    .findViewById(R.id.posterImageLoading);
+        if(posterImageLoader!=null)  posterImageLoader.hide();
             ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
             Picasso.with(getContext()).load(imageBaseURL+movie.getBackdropPath()).into(imageView);
             imageView.setOnClickListener(new View.OnClickListener() {
@@ -239,7 +218,7 @@ public class MovieDetailFragment extends Fragment {
                 }
             });
 
-            String runtime = movie.getRuntime();Log.e("RUNTIME",runtime);
+            String runtime = movie.getRuntime();
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
             title.setText(movie.getTitle()+"("+runtime+" min)");
 

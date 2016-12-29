@@ -2,9 +2,34 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
+
     <dimen name="small_margin">5dp</dimen>
     <dimen name="medium_margin">10dp</dimen>
     <dimen name="large_margin">15dp</dimen>
     <dimen name="small_padding">5dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="movies_fragment_margin_left">10dp</dimen>
+
+    <!-- AVL Loading Indicator-->
+    <dimen name="avl_indicator_margin_left">100dp</dimen>
+    <dimen name="avl_indicator_margin_top">80dp</dimen>
+
+    <!-- backdrop-->
+    <dimen name="backdrop_image_min_height">240dp</dimen>
+    <dimen name="backdrop_image_margin_top">-19dp</dimen>
+    
+    <!-- movie detail -->
+    <dimen name="movie_title_text_size">20sp</dimen>
+    <dimen name="movie_detail_text_size">16sp</dimen>
+
+    <!-- expandable text -->
+    <dimen name="expandable_text_margin_left">10dp</dimen>
+    <dimen name="expandable_text_margin_right">10dp</dimen>
+    <dimen name="expandable_image_padding">16dp</dimen>
+
+    <!-- recycler view card -->
+    <dimen name="card_corner_radius">10dp</dimen>
+    <dimen name="card_elevation">8dp</dimen>
+    <dimen name="card_margin">3dp</dimen>
 </resources>
