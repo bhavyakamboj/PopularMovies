@@ -43,15 +43,11 @@ public class MoviesFragment extends Fragment {
     private final int DEFAULT_PAGE = 1;
     private RecyclerView mRecyclerView;
     private GridLayoutManager  mLayoutManager;
-    private static MoviesAdapter mAdapter;
-    private static int mTotalPages;
-    private static int mCurrentPage;
+    private MoviesAdapter mAdapter;
     private List<Movie> mDataSet = new ArrayList<>();
-    private boolean firstRun = false;
-    private boolean sharedPreferencesChanged = false;
-    private MoviesAdapter.OnMovieClickListener movieClickListener;
-    private String selectedMovieId;
     private CatLoadingView mCatLoadingView;
+    private String movieFilter = POPULAR;
+    private SharedPreferences mPreferences;
     SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
 
@@ -67,8 +63,10 @@ public class MoviesFragment extends Fragment {
         setHasOptionsMenu(true);
         mCatLoadingView = new CatLoadingView();
         mCatLoadingView.show(getFragmentManager(), "");
-
+        // set initial preferences to 1st item on filter
     }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -76,48 +74,40 @@ public class MoviesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_movies,container,false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.movies_recycler_view);
         mRecyclerView.setHasFixedSize(true);
-
-        mLayoutManager = new GridLayoutManager(getActivity(),2);
+        final int GRID_COLUMN_COUNT = 2;
+        mLayoutManager = new GridLayoutManager(getActivity(),GRID_COLUMN_COUNT);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-
+        EndlessScrollListener endlessScrollListener = new EndlessScrollListener
+                (mLayoutManager) {
+            @Override
+            public void onLoadMore(int current_page) {
+                updateMovies(movieFilter,current_page+1);
+            }
+        };
+        mRecyclerView.addOnScrollListener(endlessScrollListener);
         mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                sharedPreferencesChanged = true;
-                if(firstRun && key.equals(getString(R.string.pref_movies_filter_key))){
-                    if(!mDataSet.isEmpty()) mAdapter.clear();
-                    updateMovies(DEFAULT_PAGE);
-                    mRecyclerView.addOnScrollListener(new EndlessScrollListener(mLayoutManager) {
-                        @Override
-                        public void onLoadMore(int current_page) {
-                            updateMovies(current_page + 1);
-                        }
-                    });
+                if(key.equals(getString(R.string.movies_filter_spinner))){
+                    // if the mfsouovie filter is same as in shared preferences
+                    String prefFilter = mPreferences.getString(getString(R.string
+                            .movies_filter_spinner),null);
+                    if(movieFilter.equals(prefFilter)){
+                        if(!mDataSet.isEmpty()) mAdapter.clear();
+                        updateMovies(mPreferences.getString(getString(R.string
+                                .movies_filter_spinner),null),DEFAULT_PAGE);
+                        movieFilter = mPreferences.getString(getString(R.string
+                                .movies_filter_spinner),null);
+                    }
                 }
             }
         };
-        preferences.registerOnSharedPreferenceChangeListener(mPrefListener);
-        if(!firstRun){
-            updateMovies(DEFAULT_PAGE);
-            mRecyclerView.addOnScrollListener(new EndlessScrollListener(mLayoutManager) {
-                @Override
-                public void onLoadMore(int current_page) {
-                    if(!sharedPreferencesChanged) {
-                        updateMovies(mCurrentPage);
-                        mCurrentPage+=1;
-                    }
-                }
-            });
-        }
-        firstRun = true;
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(getString(R.string.pref_movies_filter_key),POPULAR);
-        editor.commit();
-        movieClickListener = new MoviesAdapter.OnMovieClickListener() {
+        mPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        mPreferences.registerOnSharedPreferenceChangeListener(mPrefListener);
+        MoviesAdapter.OnMovieClickListener movieClickListener
+                = new MoviesAdapter.OnMovieClickListener() {
             @Override
             public void onMovieClick(String movieId) {
-                selectedMovieId = movieId;
                 onMovieSelected(movieId);
             }
 
@@ -128,7 +118,7 @@ public class MoviesFragment extends Fragment {
         };
         mAdapter = new MoviesAdapter(mDataSet,this.getContext(),movieClickListener);
         mRecyclerView.setAdapter(mAdapter);
-
+        updateMovies(movieFilter,DEFAULT_PAGE);
         return view;
     }
 
@@ -155,14 +145,15 @@ public class MoviesFragment extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
+                SharedPreferences.Editor editor = mPreferences.edit();
                 if(position==0){
-                    editor.putString(getString(R.string.pref_movies_filter_key),POPULAR);
+                    editor.putString(getString(R.string.movies_filter_spinner),POPULAR);
+                    movieFilter = POPULAR;
                 } else if (position==1){
-                    editor.putString(getString(R.string.pref_movies_filter_key),TOP_RATED);
+                    editor.putString(getString(R.string.movies_filter_spinner),TOP_RATED);
+                    movieFilter = TOP_RATED;
                 }
-                editor.apply();
+                editor.commit();
             }
 
             @Override
@@ -189,25 +180,15 @@ public class MoviesFragment extends Fragment {
         mListener = null;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
 
     public interface OnMovieSelectedListener {
         void onMovieSelection(String movieId);
     }
     // passing page as argument will help in making functionality of load more
     // used shared preferences to execute task
-    private void updateMovies(int page){
-            SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
-            String movieFilter = prefs.getString(getString(R.string.pref_movies_filter_key),
-                    TOP_RATED);
+    private void updateMovies(String movieFilter, int page){
             FetchMovieTask movieTask = new FetchMovieTask();
             movieTask.execute(movieFilter,Integer.toString(page));
-
-//            Toast.makeText(getActivity(),"No more results",Toast.LENGTH_LONG).show();
     }
     private class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
 
@@ -220,78 +201,75 @@ public class MoviesFragment extends Fragment {
                 return null;
             }
 
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            String language = "en-US";
+            String moviesJsonStr = null;
+            String filter = params[0];
+            String page = params[1];
 
-            if (params.length == 2) {
-                HttpURLConnection urlConnection = null;
-                BufferedReader reader = null;
-                String language = "en-US";
-                String moviesJsonStr = null;
-                String filter = params[0];
-                String page = params[1];
+            try {
+                final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
+                // TODO: move api key to build config
+                final String API_KEY = "api_key";
+                final String LANGUAGE = "language";
+                final String PAGE = "page";
 
-                try {
-                    final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
-                    // TODO: move api key to build config
-                    final String API_KEY = "api_key";
-                    final String LANGUAGE = "language";
-                    final String PAGE = "page";
+                Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                        .appendPath(filter).appendQueryParameter(API_KEY, BuildConfig.THE_MOVIE_DB_API_KEY)
+                        .appendQueryParameter(LANGUAGE, language)
+                        .appendQueryParameter(PAGE, page).build();
+                URL url = new URL(builtUri.toString());
 
-                    Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                            .appendPath(filter).appendQueryParameter(API_KEY, BuildConfig.THE_MOVIE_DB_API_KEY)
-                            .appendQueryParameter(LANGUAGE, language)
-                            .appendQueryParameter(PAGE, page).build();
-                    URL url = new URL(builtUri.toString());
+                // create connection to moviedb and open connection
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
 
-                    // create connection to moviedb and open connection
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.connect();
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuilder buffer = new StringBuilder();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    // Read the input stream into a String
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuilder buffer = new StringBuilder();
-                    if (inputStream == null) {
-                        // Nothing to do.
-                        return null;
-                    }
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line).append("\n");
+                }
 
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                        // But it does make debugging a *lot* easier if you print out the completed
-                        // buffer for debugging.
-                        buffer.append(line).append("\n");
-                    }
-
-                    if (buffer.length() == 0) {
-                        // Stream was empty.  No point in parsing.
-                        return null;
-                    }
-                    moviesJsonStr = buffer.toString();
-                    //                Log.d(LOG_TAG,moviesJsonStr);
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                    return null;
+                }
+                moviesJsonStr = buffer.toString();
+                //                Log.d(LOG_TAG,moviesJsonStr);
 
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (urlConnection != null) {
-                        urlConnection.disconnect();
-                    }
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (final IOException e) {
-                            Log.e(LOG_TAG, "Error closing stream", e);
-                        }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
                     }
                 }
-                try {
-                    return getMoviesListFromJson(moviesJsonStr);
-                } catch (JSONException e) {
-                    Log.e(LOG_TAG, e.getMessage(), e);
-                    e.printStackTrace();
-                }
+            }
+            try {
+                return getMoviesListFromJson(moviesJsonStr);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
             }
             return null;
         }
@@ -301,13 +279,11 @@ public class MoviesFragment extends Fragment {
         private List<Movie> getMoviesListFromJson(String moviesJsonStr) throws JSONException{
             String TMD_RESULTS = "results";
             String TMD_CURRENT_PAGE = "page";
-            String TMD_TOTAL_PAGES = "total_pages";
             String TMD_POSTER_PATH = "poster_path";
             String TMD_ID = "id";
             String TMD_ORIGINAL_TITLE = "original_title";
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            mTotalPages = moviesJson.getInt(TMD_TOTAL_PAGES);
-            mCurrentPage = moviesJson.getInt(TMD_CURRENT_PAGE);
+            int currentPage = moviesJson.getInt(TMD_CURRENT_PAGE);
             List<Movie> moviesList = new ArrayList<>();
 
             JSONArray jsonArray = moviesJson.getJSONArray(TMD_RESULTS);
@@ -329,7 +305,7 @@ public class MoviesFragment extends Fragment {
                         mAdapter.notifyDataSetChanged();
                     }
             }
-            if(mCatLoadingView!=null) mCatLoadingView.dismiss();
+            if(null != mCatLoadingView) mCatLoadingView.dismiss();
         }
     }
 }

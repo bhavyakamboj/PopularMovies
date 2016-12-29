@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.MovieDetail;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
-import com.roger.catloadinglibrary.CatLoadingView;
 import com.squareup.picasso.Picasso;
 import com.wang.avi.AVLoadingIndicatorView;
 
@@ -46,7 +45,6 @@ public class MovieDetailFragment extends Fragment {
     private String posterBaseURL = "http://image.tmdb.org/t/p/w342/";
     private String posterBaseLargeUrl = "http://image.tmdb.org/t/p/w780/";
     private List<String> movieImages = new ArrayList<>();
-    private CatLoadingView mCatLoadingView;
     private ImageView mExpandedImageView;
     // Hold a reference to the current animator,
     // so that it can be canceled mid-way.
@@ -62,8 +60,6 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCatLoadingView = new CatLoadingView();
-        mCatLoadingView.show(getFragmentManager(), "");
     }
 
     @Override
@@ -212,7 +208,6 @@ public class MovieDetailFragment extends Fragment {
     }
     private void updateDetailFragmentFromTask(final MovieDetail movie){
         // TODO: fill the details of movie in fragment
-            mCatLoadingView.dismiss();
             AVLoadingIndicatorView posterImageLoader = (AVLoadingIndicatorView) getView()
                     .findViewById
                 (R.id.posterImageLoading);
