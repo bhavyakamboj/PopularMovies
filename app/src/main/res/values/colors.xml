@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!-- avl indicator-->
+    <color name="white">#FFFFFF</color>
+
+    <!-- recycler view card -->
+    <color name="card_background_color">#E6E6E6</color>
 </resources>

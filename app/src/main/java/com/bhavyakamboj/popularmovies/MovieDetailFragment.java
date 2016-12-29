@@ -1,20 +1,25 @@
 package com.bhavyakamboj.popularmovies;
 
 
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.MovieDetail;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.picasso.Picasso;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,8 +31,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -35,9 +38,10 @@ import java.util.Locale;
  * A simple {@link Fragment} subclass.
  */
 public class MovieDetailFragment extends Fragment {
-    private String imageBaseURL = "http://image.tmdb.org/t/p/w1280/";
-    private String posterBaseURL = "http://image.tmdb.org/t/p/original/";
-    private List<String> movieImages = new ArrayList<>();
+    private String imageBaseURL = "http://image.tmdb.org/t/p/w780/";
+    private String posterBaseURL = "http://image.tmdb.org/t/p/w342/";
+    private String posterBaseLargeUrl = "http://image.tmdb.org/t/p/w780/";
+    private final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     public MovieDetailFragment() {
         // Required empty public constructor
     }
@@ -58,6 +62,7 @@ public class MovieDetailFragment extends Fragment {
 
         Log.v("LOGS",movieId);
         fetchDataFromInternet(movieId);
+
         return view;
     }
     public void fetchDataFromInternet(String movieId){
@@ -84,7 +89,6 @@ public class MovieDetailFragment extends Fragment {
             String movieID = params[0];
 
             try {
-                final String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
                 // TODO: move api key to build config
                 final String API_KEY = "api_key";
                 final String LANGUAGE = "language";
@@ -155,29 +159,20 @@ public class MovieDetailFragment extends Fragment {
             String MOVIE_ID = "id";
             String POSTER_PATH = "poster_path";
             String TITLE = "title";
-            String ORIGINAL_TITLE = "original_title";
-            String HOMEPAGE = "homepage";
-            String IMDB_ID = "imdb_id";
             String BACKDROP_PATH = "backdrop_path";
             String BUDGET = "budget";
             String OVERVIEW = "overview";
-            String POPULARITY = "popularity";
             String RELEASE_DATE = "release_date";
             String REVENUE = "revenue";
             String RUNTIME = "runtime";
-            String TAGLINE = "tagline";
-            String VIDEO =  "video";
             String VOTE_AVERAGE = "vote_average";
 
             JSONObject movieJson = new JSONObject(singleMovieJsonStr);
            return new com.bhavyakamboj.popularmovies.domain.MovieDetail(movieJson.getString
                    (MOVIE_ID),movieJson.getString(POSTER_PATH),movieJson.getString(TITLE),
-                   movieJson.getString(HOMEPAGE),movieJson.getString(IMDB_ID),
                    movieJson.getString(BACKDROP_PATH),movieJson.getString(BUDGET),
-                   movieJson.getString(OVERVIEW),movieJson.getString
-                   (POPULARITY),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
-                   movieJson.getString(RUNTIME),movieJson.getString(TAGLINE),movieJson
-                   .getBoolean(VIDEO),movieJson.getString(VOTE_AVERAGE));
+                   movieJson.getString(OVERVIEW),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
+                   movieJson.getString(RUNTIME),movieJson.getString(VOTE_AVERAGE));
 
         }
 
@@ -191,36 +186,92 @@ public class MovieDetailFragment extends Fragment {
         }
 
     }
-    private void updateDetailFragmentFromTask(MovieDetail movie){
+    private void updateDetailFragmentFromTask(final MovieDetail movie){
         // TODO: fill the details of movie in fragment
+            AVLoadingIndicatorView posterImageLoader = (AVLoadingIndicatorView) getView()
+                    .findViewById(R.id.posterImageLoading);
+        if(posterImageLoader!=null)  posterImageLoader.hide();
             ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
-            Picasso.with(getContext()).load(imageBaseURL+movie.getBackdrop_path()).into(imageView);
+            Picasso.with(getContext()).load(imageBaseURL+movie.getBackdropPath()).into(imageView);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ImageView image = new ImageView(getContext());
+                    Picasso.with(getContext()).load(imageBaseURL+movie
+                            .getBackdropPath()
+                    ).into(image);
+                    image.setAdjustViewBounds(true);
 
+                    AlertDialog.Builder builder =
+                            new AlertDialog.Builder(getContext()).
+                                    setPositiveButton("", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    }).
+                                    setView(image);
+                    AlertDialog dialog = builder.create();
+                    WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+                    lp.dimAmount = 0.7f;
+                    dialog.show();
+                }
+            });
+
+            String runtime = movie.getRuntime();
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
-            title.setText(movie.getTitle());
+            title.setText(movie.getTitle()+"("+runtime+" min)");
 
-            TextView overview = (TextView) getView().findViewById(R.id.overview);
-            overview.setText(movie.getOverview());
 
-            TextView popularity = (TextView) getView().findViewById(R.id.popularity);
-            popularity.setText(movie.getPopularity());
+            ExpandableTextView expTv1 = (ExpandableTextView) getView().findViewById(R.id
+                    .expandable_text_view);
+            expTv1.setText(movie.getOverview());
+
 
             TextView voteAverage = (TextView) getView().findViewById(R.id.vote_average);
             voteAverage.setText(movie.getVoteAverage());
-
-            ImageView poster = (ImageView) getView().findViewById(R.id.movie_poster);
+            // TODO: setup zoom to image now
+            final ImageView poster = (ImageView) getView().findViewById(R.id.movie_poster);
+            Picasso.with(getContext()).load(posterBaseURL+movie.getPosterPath()).fetch();
+            AVLoadingIndicatorView topImageLoader = (AVLoadingIndicatorView) getView().findViewById
+                    (R.id
+                    .topImageLoading);
+            topImageLoader.hide();
             Picasso.with(getContext()).load(posterBaseURL+movie.getPosterPath()).into(poster);
+            poster.setOnClickListener(new View.OnClickListener() {
+                @Override
+              public void onClick(View view) {
+                    ImageView image = new ImageView(getContext());
+                        Picasso.with(getContext()).load(posterBaseLargeUrl+movie
+                                .getPosterPath()
+                        ).into(image);
+                    image.setAdjustViewBounds(true);
 
-            TextView releaseDate = (TextView) getView().findViewById(R.id.release_date_textview_value);
+                    AlertDialog.Builder builder =
+                            new AlertDialog.Builder(getContext()).
+                                    setPositiveButton("", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    }).
+                                    setView(image);
+                    AlertDialog dialog = builder.create();
+                    WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+                    lp.dimAmount = 0.7f;
+                    dialog.show();
+                }
+              });
+
+        TextView releaseDate = (TextView) getView().findViewById(R.id.release_date_textview_value);
             releaseDate.setText(movie.getReleaseDate());
 
-            NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.US);
+        NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.US);
             TextView budget = (TextView) getView().findViewById(R.id.budget_textview_value);
             budget.setText(numberFormat.format(Double.parseDouble(movie.getBudget())));
 
             TextView revenue = (TextView) getView().findViewById(R.id.revenue_textview_value);
             revenue.setText(numberFormat.format(Double.parseDouble(movie.getRevenue())));
     }
-
 }
 

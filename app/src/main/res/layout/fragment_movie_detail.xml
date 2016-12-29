@@ -2,7 +2,7 @@
                  xmlns:tools="http://schemas.android.com/tools"
                  android:layout_width="match_parent"
                  android:layout_height="match_parent"
-                 xmlns:custom="http://schemas.android.com/apk/res-auto"
+                 xmlns:app="http://schemas.android.com/apk/res-auto"
                  tools:context="com.bhavyakamboj.popularmovies.MovieDetailFragment"
                  android:id="@+id/movie_detail_container">
 <ScrollView android:layout_width="match_parent"
@@ -11,45 +11,60 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/topImageLoading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/avl_indicator_margin_left"
+                android:layout_marginTop="@dimen/avl_indicator_margin_top"
+                android:gravity="center_vertical"
+                android:visibility="visible"
+                style="@style/AVLoadingIndicatorView"
+                app:indicatorName="@string/avl_indicator_name"
+                app:indicatorColor="@color/white"
+            />
             <ImageView
                 android:id="@+id/backdrop"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="240dp"
-                android:layout_marginTop="-19dp"/>
+                android:minHeight="@dimen/backdrop_image_min_height"
+                android:layout_marginTop="@dimen/backdrop_image_margin_top"/>
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/medium_margin"
-                android:layout_marginRight="@dimen/medium_margin">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sample movie title"
+                    android:text="@string/movie_loading"
                     style="@style/TitleStyle"
+                    android:textSize="@dimen/movie_title_text_size"
                     android:id="@+id/title_textview"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="This is sample movie overview"
-                    android:id="@+id/overview"/>
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    >
+                    android:layout_marginTop="@dimen/small_margin">
                     <ImageView
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:maxHeight="100dp"
+                        android:layout_weight="1"
                         android:id="@+id/movie_poster"/>
-                </LinearLayout>
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    <com.wang.avi.AVLoadingIndicatorView
+                        android:id="@+id/posterImageLoading"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="30dp"
+                        android:layout_marginTop="50dp"
+                        android:gravity="center_vertical"
+                        android:visibility="visible"
+                        style="@style/AVLoadingIndicatorView"
+                        app:indicatorName="BallPulseIndicator"
+                        app:indicatorColor="#fff"
+                        />
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -58,30 +73,27 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Popularity"
-                            android:id="@+id/popularity_textview"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Vote Average"
+                            android:text="@string/votes"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/vote_average_textview"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Release Date"
+                            android:text="@string/release"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/release_date_textview"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Budget"
+                            android:text="@string/budget"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/budget_textview"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Revenue"
+                            android:text="@string/revenue"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/revenue_textview"/>
-
                     </LinearLayout>
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -91,43 +103,54 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Popularity"
-                            android:id="@+id/popularity"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Vote Average"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/vote_average"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sample release date"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/release_date_textview_value"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sample budget value"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/budget_textview_value"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sample revenue"
+                            android:textSize="@dimen/movie_detail_text_size"
                             android:id="@+id/revenue_textview_value"/>
                     </LinearLayout>
                 </LinearLayout>
-                <TextView
-                    android:layout_width="wrap_content"
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"
+                    android:layout_margin="@dimen/small_margin"/>
+                <com.ms.square.android.expandabletextview.ExpandableTextView
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/expandable_text_view"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_weight="1"
-                    android:text="Cast and Crew"
-                    android:id="@+id/cast_crew_textview"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Some sample reviews here"
-                    android:id="@+id/reviews_textview"/>
+                    expandableTextView:maxCollapsedLines="4"
+                    expandableTextView:animDuration="200">
+                    <TextView
+                        android:id="@id/expandable_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/expandable_text_margin_left"
+                        android:layout_marginRight="@dimen/expandable_text_margin_right"
+                        android:textSize="@dimen/movie_detail_text_size"
+                        android:textColor="@color/white" />
+                    <ImageButton
+                        android:id="@id/expand_collapse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/expandable_image_padding"
+                        android:layout_gravity="right|bottom"
+                        android:background="@android:color/transparent"/>
+                </com.ms.square.android.expandabletextview.ExpandableTextView>
             </LinearLayout>
         </LinearLayout>
 </ScrollView>
