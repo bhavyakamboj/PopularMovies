@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieSelectedListener {
 
@@ -28,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
     @Override
     public void onMovieSelection(String movieId) {
-        Toast.makeText(this,movieId,Toast.LENGTH_SHORT).show();
         if(!movieId.isEmpty()){
             Intent intent = new Intent(this,MovieDetailActivity.class);
             intent.putExtra(getString(R.string.movie_id_key),movieId);

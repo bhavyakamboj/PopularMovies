@@ -299,13 +299,15 @@ public class MoviesFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
-            if(movies != null){
+            if(getView()!=null){
+                if(movies != null){
                     for(Movie movie: movies) {
                         mAdapter.add(movie);
                         mAdapter.notifyDataSetChanged();
                     }
+                }
+                if(null != mCatLoadingView) mCatLoadingView.dismiss();
             }
-            if(null != mCatLoadingView) mCatLoadingView.dismiss();
         }
     }
 }

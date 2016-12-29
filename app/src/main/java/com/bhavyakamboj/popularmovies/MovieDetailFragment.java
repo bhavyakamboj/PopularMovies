@@ -239,15 +239,15 @@ public class MovieDetailFragment extends Fragment {
                 }
             });
 
+            String runtime = movie.getRuntime();Log.e("RUNTIME",runtime);
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
-            title.setText(movie.getTitle());
+            title.setText(movie.getTitle()+"("+runtime+" min)");
+
 
             ExpandableTextView expTv1 = (ExpandableTextView) getView().findViewById(R.id
                     .expandable_text_view);
             expTv1.setText(movie.getOverview());
 
-            TextView popularity = (TextView) getView().findViewById(R.id.popularity);
-            popularity.setText(movie.getPopularity());
 
             TextView voteAverage = (TextView) getView().findViewById(R.id.vote_average);
             voteAverage.setText(movie.getVoteAverage());
@@ -283,10 +283,6 @@ public class MovieDetailFragment extends Fragment {
                     dialog.show();
                 }
               });
-
-        // Retrieve and cache the system's default "short" animation time.
-        mShortAnimationDuration = getResources().getInteger(
-                android.R.integer.config_shortAnimTime);
 
         TextView releaseDate = (TextView) getView().findViewById(R.id.release_date_textview_value);
             releaseDate.setText(movie.getReleaseDate());
