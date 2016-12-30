@@ -48,13 +48,25 @@ public class MoviesFragment extends Fragment {
     private CatLoadingView mCatLoadingView;
     private String movieFilter = POPULAR;
     private SharedPreferences mPreferences;
+    private int mCurrentPage;
     SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
-
-
     private OnMovieSelectedListener mListener;
-
     public MoviesFragment() {
         // Required empty public constructor
+    }
+    public interface OnMovieSelectedListener {
+        void onMovieSelection(String movieId);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnMovieSelectedListener) {
+            mListener = (OnMovieSelectedListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
     }
 
     @Override
@@ -88,6 +100,7 @@ public class MoviesFragment extends Fragment {
         mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if(isAdded()){
                 if(key.equals(getString(R.string.movies_filter_spinner))){
                     // if the mfsouovie filter is same as in shared preferences
                     String prefFilter = mPreferences.getString(getString(R.string
@@ -99,7 +112,7 @@ public class MoviesFragment extends Fragment {
                         movieFilter = mPreferences.getString(getString(R.string
                                 .movies_filter_spinner),null);
                     }
-                }
+                }}
             }
         };
         mPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -121,9 +134,7 @@ public class MoviesFragment extends Fragment {
         updateMovies(movieFilter,DEFAULT_PAGE);
         return view;
     }
-
-    // TODO: hook method into UI event
-    // TODO: link on item click to onMovieSelected method
+    
     public void onMovieSelected(String movieId) {
         if (mListener != null) {
             mListener.onMovieSelection(movieId);
@@ -163,28 +174,7 @@ public class MoviesFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnMovieSelectedListener) {
-            mListener = (OnMovieSelectedListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-
-    public interface OnMovieSelectedListener {
-        void onMovieSelection(String movieId);
-    }
-    // passing page as argument will help in making functionality of load more
+// passing page as argument will help in making functionality of load more
     // used shared preferences to execute task
     private void updateMovies(String movieFilter, int page){
             FetchMovieTask movieTask = new FetchMovieTask();
@@ -299,7 +289,7 @@ public class MoviesFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
-            if(getView()!=null){
+            if(isAdded()){
                 if(movies != null){
                     for(Movie movie: movies) {
                         mAdapter.add(movie);
@@ -307,7 +297,13 @@ public class MoviesFragment extends Fragment {
                     }
                 }
                 if(null != mCatLoadingView) mCatLoadingView.dismiss();
+
             }
         }
+    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 }
