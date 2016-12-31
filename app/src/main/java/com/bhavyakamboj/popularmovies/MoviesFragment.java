@@ -360,7 +360,6 @@ public class MoviesFragment extends Fragment implements ConnectivityReceiver.Con
     }
     // Method to manually check connection status
     private boolean checkConnection() {
-
         return  ConnectivityReceiver.isConnected();
     }
 
