@@ -49,7 +49,7 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder>
                 onMovieClicked(movieId);
             }
         });
-        holder.textView.setText(movie.getMovieId());
+        holder.textView.setText(movie.getMovieId().toString());
 
     }
 

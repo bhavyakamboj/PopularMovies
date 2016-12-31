@@ -17,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bhavyakamboj.popularmovies.domain.MovieDetail;
+import com.bhavyakamboj.popularmovies.domain.Movie;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.squareup.picasso.Picasso;
 import com.wang.avi.AVLoadingIndicatorView;
@@ -85,12 +85,12 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
         return  ConnectivityReceiver.isConnected();
     }
 
-    private class FetchMovieTask extends AsyncTask<String,Void,MovieDetail> {
+    private class FetchMovieTask extends AsyncTask<String,Void,Movie> {
 
         private final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
         // params[0] is for filter, params[1] for page, params[2] is for movie ID
         @Override
-        protected MovieDetail doInBackground(String... params) {
+        protected Movie doInBackground(String... params) {
 
             if (params.length == 0) {
                 return null;
@@ -170,7 +170,7 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
 
 
 
-        private MovieDetail getSingleMovieFromJSON(String singleMovieJsonStr) throws JSONException {
+        private Movie getSingleMovieFromJSON(String singleMovieJsonStr) throws JSONException {
             String MOVIE_ID = "id";
             String POSTER_PATH = "poster_path";
             String TITLE = "title";
@@ -183,16 +183,16 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
             String VOTE_AVERAGE = "vote_average";
 
             JSONObject movieJson = new JSONObject(singleMovieJsonStr);
-           return new com.bhavyakamboj.popularmovies.domain.MovieDetail(movieJson.getString
+           return new com.bhavyakamboj.popularmovies.domain.Movie(movieJson.getInt
                    (MOVIE_ID),movieJson.getString(POSTER_PATH),movieJson.getString(TITLE),
-                   movieJson.getString(BACKDROP_PATH),movieJson.getString(BUDGET),
-                   movieJson.getString(OVERVIEW),movieJson.getString(RELEASE_DATE),movieJson.getString(REVENUE),
-                   movieJson.getString(RUNTIME),movieJson.getString(VOTE_AVERAGE));
+                   movieJson.getString(BACKDROP_PATH),movieJson.getInt(BUDGET),
+                   movieJson.getString(OVERVIEW),movieJson.getString(RELEASE_DATE),movieJson.getInt(REVENUE),
+                   movieJson.getInt(RUNTIME),movieJson.getDouble(VOTE_AVERAGE));
 
         }
 
         @Override
-        protected void onPostExecute(MovieDetail movie) {
+        protected void onPostExecute(Movie movie) {
             super.onPostExecute(movie);
             if(movie != null){
                     updateDetailFragmentFromTask(movie);
@@ -201,7 +201,7 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
         }
 
     }
-    private void updateDetailFragmentFromTask(final MovieDetail movie){
+    private void updateDetailFragmentFromTask(final Movie movie){
         // TODO: fill the details of movie in fragment
             AVLoadingIndicatorView posterImageLoader = (AVLoadingIndicatorView) getView()
                     .findViewById(R.id.posterImageLoading);
@@ -233,7 +233,7 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
                 }
             });
 
-            String runtime = movie.getRuntime();
+            String runtime = movie.getRuntime().toString();
             TextView title = (TextView) getView().findViewById(R.id.title_textview);
             title.setText(movie.getTitle()+"("+runtime+" min)");
 
@@ -244,7 +244,7 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
 
 
             TextView voteAverage = (TextView) getView().findViewById(R.id.vote_average);
-            voteAverage.setText(movie.getVoteAverage());
+            voteAverage.setText(movie.getVoteAverage().toString());
             // TODO: setup zoom to image now
             final ImageView poster = (ImageView) getView().findViewById(R.id.movie_poster);
             Picasso.with(getContext()).load(posterBaseURL+movie.getPosterPath()).fetch();
@@ -283,10 +283,10 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
 
         NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.US);
             TextView budget = (TextView) getView().findViewById(R.id.budget_textview_value);
-            budget.setText(numberFormat.format(Double.parseDouble(movie.getBudget())));
+            budget.setText(numberFormat.format(movie.getBudget()));
 
             TextView revenue = (TextView) getView().findViewById(R.id.revenue_textview_value);
-            revenue.setText(numberFormat.format(Double.parseDouble(movie.getRevenue())));
+            revenue.setText(numberFormat.format(movie.getRevenue()));
     }
 }
 
