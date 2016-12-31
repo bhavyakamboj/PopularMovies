@@ -1,5 +1,6 @@
 package com.bhavyakamboj.popularmovies;
 
+import com.bhavyakamboj.popularmovies.domain.Movie;
 import com.bhavyakamboj.popularmovies.domain.MovieResponse;
 
 import retrofit.Call;
@@ -18,5 +19,5 @@ public interface MovieInterface {
             apiKey,@Query("page") int page);
 
     @GET("movie/{id}")
-    Call<MovieResponse> getMovieDetails(@Path("id") int id, @Query("api_key") String apiKey);
+    Call<Movie> getMovieDetails(@Path("id") int id, @Query("api_key") String apiKey);
 }

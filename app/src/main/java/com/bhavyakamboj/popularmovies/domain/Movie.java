@@ -23,7 +23,7 @@ public class Movie {
     private String releaseDate;
     @SerializedName("revenue")
     private Integer revenue;
-    @SerializedName("run_time")
+    @SerializedName("runtime")
     private Integer runtime;
     @SerializedName("vote_average")
     private Double voteAverage;
