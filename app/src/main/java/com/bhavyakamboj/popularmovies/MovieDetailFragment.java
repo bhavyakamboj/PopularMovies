@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bhavyakamboj.popularmovies.domain.MovieDetail;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
@@ -37,7 +38,7 @@ import java.util.Locale;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MovieDetailFragment extends Fragment {
+public class MovieDetailFragment extends Fragment implements ConnectivityReceiver.ConnectivityReceiverListener{
     private String imageBaseURL = "http://image.tmdb.org/t/p/w780/";
     private String posterBaseURL = "http://image.tmdb.org/t/p/w342/";
     private String posterBaseLargeUrl = "http://image.tmdb.org/t/p/w780/";
@@ -66,8 +67,22 @@ public class MovieDetailFragment extends Fragment {
         return view;
     }
     public void fetchDataFromInternet(String movieId){
-        FetchMovieTask movieTask = new FetchMovieTask();
-        movieTask.execute(movieId);
+        if(!checkConnection()){
+            Toast.makeText(getActivity(),"Not connected to internet",Toast.LENGTH_SHORT).show();
+        } else {
+            FetchMovieTask movieTask = new FetchMovieTask();
+            movieTask.execute(movieId);
+        }
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        if(!isConnected){
+            Toast.makeText(getActivity(),"Not connected to internet",Toast.LENGTH_SHORT).show();
+        }
+    }
+    private boolean checkConnection() {
+        return  ConnectivityReceiver.isConnected();
     }
 
     private class FetchMovieTask extends AsyncTask<String,Void,MovieDetail> {
