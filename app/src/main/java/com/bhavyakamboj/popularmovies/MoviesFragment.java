@@ -83,9 +83,9 @@ public class MoviesFragment extends Fragment implements ConnectivityReceiver.Con
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putInt("spinner",mSelectedSpinner);
         outState.putString("filter",movieFilter);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
