@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
-`public class MainActivity extends AppCompatActivity implements MoviesFragment
+public class MainActivity extends AppCompatActivity implements MoviesFragment
         .OnMovieSelectedListener {
 
     private final String LOG_TAG = this.getClass().getSimpleName();
