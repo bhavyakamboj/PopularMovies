@@ -49,7 +49,7 @@ public class MoviesFragment extends Fragment {
     private MoviesAdapter mAdapter;
     private List<Movie> mDataSet = new ArrayList<>();
     private CatLoadingView mCatLoadingView;
-    private String movieFilter = POPULAR;
+    private String movieFilter;
     private SharedPreferences mPreferences;
     private int mCurrentPage;
     private int mSelectedSpinner=0;
@@ -79,18 +79,34 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
         mCatLoadingView = new CatLoadingView();
         mCatLoadingView.show(getFragmentManager(), "");
         loaderVisible = true;
         // set initial preferences to 1st item on filter
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("spinner",mSelectedSpinner);
+        outState.putString("filter",movieFilter);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 //        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_movies,container,false);
+
+        if(savedInstanceState != null){
+            mSpinner.setSelection(savedInstanceState.getInt("spinner"));
+            movieFilter = savedInstanceState.getString("filter");
+        } else {
+            movieFilter = POPULAR;
+        }
+
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.movies_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         final int GRID_COLUMN_COUNT = 2;
@@ -112,11 +128,11 @@ public class MoviesFragment extends Fragment {
                     // if the mfsouovie filter is same as in shared preferences
                     String prefFilter = mPreferences.getString(getString(R.string
                             .movies_filter_spinner),null);
-                    mSpinner.setSelection(mSelectedSpinner);
+//                    mSpinner.setSelection(mSelectedSpinner);
                     if(movieFilter.equals(prefFilter)){
                         if(!mDataSet.isEmpty()) mAdapter.clear();
                         movieFilter = mPreferences.getString(getString(R.string
-                                .movies_filter_spinner),POPULAR);
+                                .movies_filter_spinner),null);
                         updateMovies(movieFilter,DEFAULT_PAGE);
 
 
@@ -162,6 +178,7 @@ public class MoviesFragment extends Fragment {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mSpinner.setAdapter(spinnerAdapter);
+        mSpinner.setSelection(mSelectedSpinner);
         mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -308,7 +325,6 @@ public class MoviesFragment extends Fragment {
                     mAdapter.notifyDataSetChanged();
                 }
                 if(loaderVisible)  mCatLoadingView.dismiss();
-
             }
         }
     }
