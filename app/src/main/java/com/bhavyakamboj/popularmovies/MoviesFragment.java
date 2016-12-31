@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.GridLayoutManager;
@@ -21,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.bhavyakamboj.popularmovies.domain.Movie;
 import com.roger.catloadinglibrary.CatLoadingView;
@@ -41,7 +41,7 @@ import java.util.List;
 import static com.bhavyakamboj.popularmovies.R.id.spinner;
 
 
-public class MoviesFragment extends Fragment {
+public class MoviesFragment extends Fragment implements ConnectivityReceiver.ConnectivityReceiverListener {
     private final String TOP_RATED = "top_rated";
     private final String POPULAR = "popular";
     private final int DEFAULT_PAGE = 1;
@@ -121,7 +121,7 @@ public class MoviesFragment extends Fragment {
                 (mLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
-                updateMovies(movieFilter,current_page+1);
+                    updateMovies(movieFilter, current_page + 1);
             }
         };
         mRecyclerView.addOnScrollListener(endlessScrollListener);
@@ -129,20 +129,22 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
                 if(isAdded()){
-                if(key.equals(getString(R.string.movies_filter_spinner))){
-                    // if the mfsouovie filter is same as in shared preferences
-                    String prefFilter = mPreferences.getString(getString(R.string
-                            .movies_filter_spinner),null);
-//                    mSpinner.setSelection(mSelectedSpinner);
-                    if(movieFilter.equals(prefFilter)){
-                        if(!mDataSet.isEmpty()) mAdapter.clear();
-                        movieFilter = mPreferences.getString(getString(R.string
-                                .movies_filter_spinner),null);
-                        updateMovies(movieFilter,DEFAULT_PAGE);
-
-
+                    if (!checkConnection()) {
+                        Toast.makeText(getActivity(),"Not connected to internet",Toast
+                                .LENGTH_SHORT).show();
+                    } else if(key.equals(getString(R.string.movies_filter_spinner)) ) {
+                        // if the mfsouovie filter is same as in shared preferences
+                        String prefFilter = mPreferences.getString(getString(R.string
+                                .movies_filter_spinner), null);
+                        //                    mSpinner.setSelection(mSelectedSpinner);
+                        if (movieFilter.equals(prefFilter)) {
+                            if (!mDataSet.isEmpty()) mAdapter.clear();
+                            movieFilter = mPreferences.getString(getString(R.string
+                                    .movies_filter_spinner), null);
+                            updateMovies(movieFilter, DEFAULT_PAGE);
+                        }
                     }
-                }}
+                }
             }
         };
         mPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -161,7 +163,8 @@ public class MoviesFragment extends Fragment {
         };
         mAdapter = new MoviesAdapter(mDataSet,this.getContext(),movieClickListener);
         mRecyclerView.setAdapter(mAdapter);
-        updateMovies(movieFilter,DEFAULT_PAGE);
+            updateMovies(movieFilter,DEFAULT_PAGE);
+        MyApplication.getInstance().setConnectivityListener(this);
         return view;
     }
     
@@ -210,8 +213,12 @@ public class MoviesFragment extends Fragment {
 // passing page as argument will help in making functionality of load more
     // used shared preferences to execute task
     private void updateMovies(String movieFilter, int page){
+        if(checkConnection()){
             FetchMovieTask movieTask = new FetchMovieTask();
             movieTask.execute(movieFilter,Integer.toString(page));
+        } else {
+            Toast.makeText(getActivity(),"Not connected to internet",Toast.LENGTH_SHORT).show();
+        }
     }
     private class FetchMovieTask extends AsyncTask<String,Void,List<Movie>> {
 
@@ -339,12 +346,22 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null; 
+        mListener = null;
     }
 
+
     @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        // TODO: implement restore state here
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        if(!isConnected){
+            Toast.makeText(getActivity(),"Not connected to internet",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getActivity(),"Connected to internet",Toast.LENGTH_SHORT).show();
+        }
     }
+    // Method to manually check connection status
+    private boolean checkConnection() {
+
+        return  ConnectivityReceiver.isConnected();
+    }
+
 }
