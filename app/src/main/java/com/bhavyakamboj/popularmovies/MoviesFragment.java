@@ -243,7 +243,8 @@ public class MoviesFragment extends Fragment implements ConnectivityReceiver.Con
                         mDataSet.add(movie);
                     }
                     mAdapter.notifyDataSetChanged();
-                    if (loaderVisible && mCatLoadingView.isVisible()) {
+
+                    if (loaderVisible) {
                         mCatLoadingView.dismiss();
                         loaderVisible = false;
                     }
@@ -253,6 +254,11 @@ public class MoviesFragment extends Fragment implements ConnectivityReceiver.Con
             @Override
             public void onFailure(Throwable t) {
                 Log.e("TAG", t.toString());
+
+                if (loaderVisible) {
+                    mCatLoadingView.dismiss();
+                    loaderVisible = false;
+                }
             }
         });
         }
