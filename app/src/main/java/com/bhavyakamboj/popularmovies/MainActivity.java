@@ -21,7 +21,8 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment
                 fragment = new MoviesFragment();
                 fm.beginTransaction()
                         .add(R.id.container,fragment)
-                        .commitAllowingStateLoss();
+                        .commit();
+                fm.executePendingTransactions();
             }
         }
     }

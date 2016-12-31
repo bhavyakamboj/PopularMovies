@@ -23,7 +23,8 @@ public class MovieDetailActivity extends AppCompatActivity {
             fragment.setArguments(bundle);
             fm.beginTransaction()
                     .add(R.id.movie_detail_container,fragment)
-                    .commitAllowingStateLoss();
+                    .commit();
+            fm.executePendingTransactions();
         }
     }
 }
