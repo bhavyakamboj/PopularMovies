@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.GridLayoutManager;
@@ -36,6 +37,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.bhavyakamboj.popularmovies.R.id.spinner;
+
 
 public class MoviesFragment extends Fragment {
     private final String TOP_RATED = "top_rated";
@@ -49,8 +52,11 @@ public class MoviesFragment extends Fragment {
     private String movieFilter = POPULAR;
     private SharedPreferences mPreferences;
     private int mCurrentPage;
+    private int mSelectedSpinner=0;
+    private Spinner mSpinner;
     SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
     private OnMovieSelectedListener mListener;
+    private boolean loaderVisible = false;
     public MoviesFragment() {
         // Required empty public constructor
     }
@@ -75,6 +81,7 @@ public class MoviesFragment extends Fragment {
         setHasOptionsMenu(true);
         mCatLoadingView = new CatLoadingView();
         mCatLoadingView.show(getFragmentManager(), "");
+        loaderVisible = true;
         // set initial preferences to 1st item on filter
     }
 
@@ -105,12 +112,14 @@ public class MoviesFragment extends Fragment {
                     // if the mfsouovie filter is same as in shared preferences
                     String prefFilter = mPreferences.getString(getString(R.string
                             .movies_filter_spinner),null);
+                    mSpinner.setSelection(mSelectedSpinner);
                     if(movieFilter.equals(prefFilter)){
                         if(!mDataSet.isEmpty()) mAdapter.clear();
-                        updateMovies(mPreferences.getString(getString(R.string
-                                .movies_filter_spinner),null),DEFAULT_PAGE);
                         movieFilter = mPreferences.getString(getString(R.string
-                                .movies_filter_spinner),null);
+                                .movies_filter_spinner),POPULAR);
+                        updateMovies(movieFilter,DEFAULT_PAGE);
+
+
                     }
                 }}
             }
@@ -145,24 +154,26 @@ public class MoviesFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu,menu);
 
-        MenuItem item = menu.findItem(R.id.spinner);
-        Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
+        MenuItem item = menu.findItem(spinner);
+        mSpinner = (Spinner) MenuItemCompat.getActionView(item);
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.spinner_list, android.R.layout.simple_spinner_item);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        spinner.setAdapter(spinnerAdapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpinner.setAdapter(spinnerAdapter);
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 SharedPreferences.Editor editor = mPreferences.edit();
                 if(position==0){
                     editor.putString(getString(R.string.movies_filter_spinner),POPULAR);
                     movieFilter = POPULAR;
+                    mSelectedSpinner = 0;
                 } else if (position==1){
                     editor.putString(getString(R.string.movies_filter_spinner),TOP_RATED);
                     movieFilter = TOP_RATED;
+                    mSelectedSpinner = 1;
                 }
                 editor.commit();
             }
@@ -293,10 +304,10 @@ public class MoviesFragment extends Fragment {
                 if(movies != null){
                     for(Movie movie: movies) {
                         mAdapter.add(movie);
-                        mAdapter.notifyDataSetChanged();
                     }
+                    mAdapter.notifyDataSetChanged();
                 }
-                if(null != mCatLoadingView) mCatLoadingView.dismiss();
+                if(loaderVisible)  mCatLoadingView.dismiss();
 
             }
         }
@@ -305,5 +316,11 @@ public class MoviesFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        // TODO: implement restore state here
     }
 }
