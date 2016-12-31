@@ -2,6 +2,7 @@ package com.bhavyakamboj.popularmovies;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -109,8 +110,12 @@ public class MoviesFragment extends Fragment {
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.movies_recycler_view);
         mRecyclerView.setHasFixedSize(true);
-        final int GRID_COLUMN_COUNT = 2;
-        mLayoutManager = new GridLayoutManager(getActivity(),GRID_COLUMN_COUNT);
+        if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_PORTRAIT){
+            mLayoutManager = new GridLayoutManager(getActivity(),2);
+        } else {
+            mLayoutManager = new GridLayoutManager(getActivity(),4);
+        }
+
         mRecyclerView.setLayoutManager(mLayoutManager);
         EndlessScrollListener endlessScrollListener = new EndlessScrollListener
                 (mLayoutManager) {
@@ -324,7 +329,10 @@ public class MoviesFragment extends Fragment {
                     }
                     mAdapter.notifyDataSetChanged();
                 }
-                if(loaderVisible)  mCatLoadingView.dismiss();
+                if(loaderVisible){
+                    mCatLoadingView.dismiss();
+                    loaderVisible = false;
+                }
             }
         }
     }

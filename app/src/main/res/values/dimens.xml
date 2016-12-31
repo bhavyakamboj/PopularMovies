@@ -29,7 +29,7 @@
     <dimen name="expandable_image_padding">16dp</dimen>
 
     <!-- recycler view card -->
-    <dimen name="card_corner_radius">10dp</dimen>
+    <dimen name="card_corner_radius">0dp</dimen>
     <dimen name="card_elevation">8dp</dimen>
-    <dimen name="card_margin">3dp</dimen>
+    <dimen name="zero">0dp</dimen>
 </resources>
