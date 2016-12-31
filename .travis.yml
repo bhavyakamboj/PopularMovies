@@ -1,0 +1,4 @@
+language: android
+sudo: required
+before_install:
+git update-index --chmod=+x gradlew
