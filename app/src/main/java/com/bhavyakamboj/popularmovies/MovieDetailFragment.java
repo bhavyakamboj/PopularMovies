@@ -106,9 +106,6 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
 
     private void updateDetailFragmentUI(final Movie movie){
         // TODO: fill the details of movie in fragment
-            AVLoadingIndicatorView posterImageLoader = (AVLoadingIndicatorView) getView()
-                    .findViewById(R.id.posterImageLoading);
-        if(posterImageLoader!=null)  posterImageLoader.hide();
             ImageView imageView = (ImageView) getView().findViewById(R.id.backdrop);
             Picasso.with(getContext()).load(imageBaseURL+movie.getBackdropPath()).into(imageView);
             imageView.setOnClickListener(new View.OnClickListener() {
@@ -147,7 +144,7 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
 
 
             TextView voteAverage = (TextView) getView().findViewById(R.id.vote_average);
-            voteAverage.setText(movie.getVoteAverage().toString());
+            voteAverage.setText("Votes "+movie.getVoteAverage().toString());
             // TODO: setup zoom to image now
             final ImageView poster = (ImageView) getView().findViewById(R.id.movie_poster);
             Picasso.with(getContext()).load(posterBaseURL+movie.getPosterPath()).fetch();
@@ -182,14 +179,14 @@ public class MovieDetailFragment extends Fragment implements ConnectivityReceive
               });
 
         TextView releaseDate = (TextView) getView().findViewById(R.id.release_date_textview_value);
-            releaseDate.setText(movie.getReleaseDate());
+            releaseDate.setText("Release "+movie.getReleaseDate());
 
         NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.US);
             TextView budget = (TextView) getView().findViewById(R.id.budget_textview_value);
-            budget.setText(numberFormat.format(movie.getBudget()));
+            budget.setText("Budget "+numberFormat.format(movie.getBudget()));
 
             TextView revenue = (TextView) getView().findViewById(R.id.revenue_textview_value);
-            revenue.setText(numberFormat.format(movie.getRevenue()));
+            revenue.setText("Revenue "+numberFormat.format(movie.getRevenue()));
     }
 }
 
