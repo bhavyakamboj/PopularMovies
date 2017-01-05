@@ -1,18 +1,14 @@
 package com.bhavyakamboj.popularmovies;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.support.v7.widget.RecyclerView;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bhavyakamboj.popularmovies.domain.Movie;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -42,27 +38,9 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.SimpleViewHolder>
 
     @Override
     public void onBindViewHolder(final SimpleViewHolder holder, int position) {
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        String widthPath;
-        if (width <= 92)
-            widthPath = "/w92";
-        else if (width <= 154)
-            widthPath = "/w154";
-        else if (width <= 185)
-            widthPath = "/w185";
-        else if (width <= 342)
-            widthPath = "/w342";
-        else if (width <= 500)
-            widthPath = "/w500";
-        else
-            widthPath = "/w780";
-        final String BASE_URL = "http://image.tmdb.org/t/p"+widthPath;
+        final String BASE_URL = "http://image.tmdb.org/t/p/w500";
         Movie movie = mDataSet.get(position);
-        Picasso.with(mContext).load(BASE_URL+movie.getPosterPath()).networkPolicy(NetworkPolicy.OFFLINE)
+        Picasso.with(mContext).load(BASE_URL+movie.getPosterPath())
                 .into(holder.imageView);
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
